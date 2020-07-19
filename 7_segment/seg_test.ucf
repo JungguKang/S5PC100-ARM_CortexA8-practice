@@ -1,0 +1,29 @@
+NET "DIGIT<0>"  	LOC = "D6";
+NET "DIGIT<1>"  	LOC = "C6";
+NET "DIGIT<2>"  	LOC = "B6";
+NET "DIGIT<3>"  	LOC = "E7";
+NET "DIGIT<4>"  	LOC = "D7";
+NET "DIGIT<5>"  	LOC = "B7";
+
+NET "SEG<0>"   		LOC = "A7";
+NET "SEG<1>"   		LOC = "E8";
+NET "SEG<2>"   		LOC = "D8";
+NET "SEG<3>"   		LOC = "B8";
+NET "SEG<4>"   		LOC = "A8";
+NET "SEG<5>"   		LOC = "F9";
+NET "SEG<6>"   		LOC = "E9";
+NET "SEG<7>"  		LOC = "B9";
+
+NET "PUSH<0>"  		LOC = "H5";
+NET "PUSH<1>"  		LOC = "G5";
+NET "PUSH<2>"  		LOC = "G3";
+NET "PUSH<3>"  		LOC = "G4";
+
+NET "dip<0>"  		LOC = "C2";
+NET "dip<1>"  		LOC = "D1";
+NET "dip<2>"  		LOC = "E4";
+NET "dip<3>"  		LOC = "D4";
+NET "dip<4>"  		LOC = "F5";
+NET "dip<5>"  		LOC = "F2";
+NET "dip<6>"  		LOC = "G1";
+NET "dip<7>"  		LOC = "H1";
