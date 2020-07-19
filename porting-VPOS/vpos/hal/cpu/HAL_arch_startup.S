@@ -83,15 +83,31 @@ vh_VPOS_reset:
 	str	r0, vk_save_irq_current_tcb_bottom
 
 	// Mask interrupt and fast interrupt
+	mrs r0, cpsr
+    	orr r0, r0, #0xc0
+    	msr cpsr, r0
 
         
 	
 	// Invalidate all instruction caches to point of unification. Also flushes branch target cache.
+
+	mov r0, #0x00
+    	mcr p15, 0, r0, c7, c5, 0
 	
 	// Control Register Setting
 	
+	mcr p15, 0, r0, c1, c0, 0
+    	bic r0, r0, #0x01
+    	bic r0, r0, #0x04
+    	bic r0, r0, #0x1000
+    	bic r0, r0, #0x2000
+    	orr r0, r0, #0x02
+    	orr r0, r0, #0x800
+    	mcr p15, 0, r0, c1, c0, 0
 	
 	// change vector table base address (0x20008044)
+	ldr r0, =vh_vector_base
+	mcr p15, 0, r0, c12, c0, 0
 	
 	// stack pointer setting
 	mrs r0,cpsr
@@ -122,6 +138,10 @@ vh_VPOS_reset:
   	ldr sp,=vh_svcstack	
 
 	// user mode sp 
+	bic r0,r0,#vh_MODEMASK|vh_NOINT
+    	orr r1,r0,#vh_USERMODE|0x00
+    	msr cpsr_cxsf,r1            
+  	ldr sp,=vh_svcstack
 
 	b VPOS_kernel_main
 
@@ -155,17 +175,96 @@ vh_svc_int_enable:
 
 vh_software_interrupt:
 vh_entering_swi:
+
+	str	sp, vk_save_swi_mode_stack_ptr
+	stmfd	sp, {r14}^
+	sub 	sp, sp, #4
+	stmfd	sp, {r13}^
+	sub	sp, sp, #4
+	stmfd	sp!, {r0-r12}
+	mrs 	r0, spsr_all
+	stmfd	sp!, {r0, lr}
+	
+	
+	mrs	r0, cpsr
+	orr	r0, r0, #0x80
+	msr 	cpsr_c, r0
+
+	str	sp, vk_save_swi_current_tcb_bottom
+	ldr	r0, [sp, #8]
 	
 	bl	vk_swi_classifier
 
 vh_leaving_swi:
+	ldmfd	sp!, {r0, lr}
+	msr	spsr_cxsf, r0
+	ldmfd	sp!, {r0-r12}
+	ldmfd	sp, {r13}^
+	add	sp, sp, #4
+	ldmfd	sp, {r14}^
+	add	sp, sp, #4
+	movs	pc, lr
 
 
 
 vh_irq:	
+	sub	lr, lr, #4
+	str	sp, vk_save_irq_mode_stack_ptr
+	stmfd	sp, {r14}^
+	sub 	sp, sp, #4
+	stmfd	sp, {r13}^
+	sub	sp, sp, #4
+	stmfd	sp!, {r0-r12}
+	mrs 	r0, spsr_all
+	stmfd	sp!, {r0, lr}
+	str	sp, vk_save_irq_current_tcb_bottom
+	ldr	r0, =0xe4000000
+	ldr	r1, [r0]
+	cmp 	r1, #0x0
+	bne	vh_irq_VIC0
+	ldr	r0, =0xe4100000
+	ldr	r1, [r0]
+	cmp	r1, #0x0
+	bne	vh_irq_VIC1
+
 vh_irq_VIC0:
+	ldr	r0, =0xe4000f00
+	ldr	r1, [r0]
+
+	mov 	r14, pc
+	mov 	pc, r1
+	msr 	cpsr_c, #vh_IRQMODE | 0x80
+	
+	ldr	r14, =0xe4100f00
+	str	r14, [r14]
+	ldmfd	sp!, {r0, lr}
+	msr	spsr_cxsf, r0
+	ldmfd	sp!, {r0-r12}
+	ldmfd	sp, {r13}^
+	add	sp, sp, #4
+	ldmfd	sp, {r14}^
+	add	sp, sp, #4
+	movs	pc, lr
+	
 
 vh_irq_VIC1:
+	ldr	r0, =0xe4100f00
+	ldr	r1, [r0]
+
+	mov 	r14, pc
+	mov 	pc, r1
+	msr 	cpsr_c, #vh_IRQMODE | 0x80
+	
+	ldr	r14, =0xe4100f00
+	str	r14, [r14]
+	ldmfd	sp!, {r0, lr}
+	msr	spsr_cxsf, r0
+	ldmfd	sp!, {r0-r12}
+	ldmfd	sp, {r13}^
+	add	sp, sp, #4
+	ldmfd	sp, {r14}^
+	add	sp, sp, #4
+	movs	pc, lr
 
 
 
